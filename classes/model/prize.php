@@ -70,7 +70,27 @@ class Model_Prize extends \Orm\Model
 		$result = $query->execute();
 
 		return Model_Prize::query()
-			->where('participant_id', 'IS', $participant_id)
+			->where('participant_id', $participant->id)
+			->get_one();
+	}
+
+	public static function draw_sql_lock(Model_Participant $participant)
+	{
+		if ( ! $participant->id) {
+			throw new Exception('Participant not saved.');
+		}
+
+		// WRITE implies READ
+		\DB::query("LOCK TABLES `competition__prizes` WRITE")->execute();
+		$ids = \DB::query('SELECT id FROM `competition__prizes` WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1')
+			->execute()
+			->as_array(null, 'id');
+		$id = reset($ids);
+		\DB::query("UPDATE `competition__prizes` SET participant_id = '{$participant->id}' WHERE id = $id")->execute();
+		\DB::query("UNLOCK TABLES")->execute();
+
+		return Model_Prize::query()
+			->where('participant_id', $participant->id)
 			->get_one();
 	}
 
