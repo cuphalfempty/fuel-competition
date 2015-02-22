@@ -10,6 +10,7 @@ class Model_Participant extends \Orm\Model
 	protected static $_properties = [
 		'id',
 		'name',
+		'prize_id',
 		'created_at',
 		'updated_at',
 	];

@@ -17,6 +17,7 @@ class Participants
 				[
 					'id' => ['type' => 'int', 'auto_increment' => true, 'unsigned' => true],
 					'name' => ['type' => 'varchar', 'constraint' => 64],
+					'prize_id' => ['type' => 'int', 'unsigned' => true, 'null' => true],
 					'created_at' => ['type' => 'int', 'unsigned' => true],
 					'updated_at' => ['type' => 'int', 'unsigned' => true, 'null' => true],
 				],
@@ -39,6 +40,7 @@ class Participants
 		catch (\Exception $e) {
 			\DB::rollback_transaction();
 			\Cli::error($e->getMessage());
+			\Cli::error($e->getFile() . ':' . $e->getLine());
 			return false;
 		}
 	}
@@ -47,13 +49,14 @@ class Participants
 	{
 		try {
 			\DB::start_transaction();
-			\DBUtil::drop_foreign_key('competition__participants', 'fk_participants');
+			\DBUtil::drop_foreign_key('competition__prizes', 'fk_participants');
 			\DBUtil::drop_table($this->_table_name);
 			\DB::commit_transaction();
 		}
 		catch (\Exception $e) {
 			\DB::rollback_transaction();
 			\Cli::error($e->getMessage());
+			\Cli::error($e->getFile() . ':' . $e->getLine());
 			return false;
 		}
 	}

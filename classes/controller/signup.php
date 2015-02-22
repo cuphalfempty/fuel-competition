@@ -15,6 +15,7 @@ class Controller_Signup extends \Controller_Template
 
 		if ($prize = Model_Prize::{'draw_'.$method}($participant)) {
 		 $participant->prize = $prize;
+		 $participant->prize_id = $prize->id;
 		 $participant->save();
 		}
 

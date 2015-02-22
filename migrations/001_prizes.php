@@ -29,6 +29,8 @@ class Prizes
 		}
 		catch (\Exception $e) {
 			\DB::rollback_transaction();
+			\Cli::error($e->getMessage());
+			\Cli::error($e->getFile() . ':' . $e->getLine());
 			return false;
 		}
 	}
@@ -42,6 +44,8 @@ class Prizes
 		}
 		catch (\Exception $e) {
 			\DB::rollback_transaction();
+			\Cli::error($e->getMessage());
+			\Cli::error($e->getFile() . ':' . $e->getLine());
 			return false;
 		}
 	}
