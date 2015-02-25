@@ -102,11 +102,36 @@ class Model_Prize extends \Orm\Model
 
 		// WRITE implies READ
 		\DB::query("LOCK TABLES `" . static::$_table_name . "` WRITE")->execute();
-		$ids = \DB::query("SELECT id FROM `" . static::$_table_name . "` WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1")
+		$id = \DB::query("SELECT id FROM `" . static::$_table_name . "` WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1")
 			->execute()
-			->as_array(null, 'id');
-		$id = reset($ids);
+			->get('id', null);
 		\DB::query("UPDATE `" . static::$_table_name . "` SET participant_id = '{$participant->id}' WHERE id = $id")->execute();
+		\DB::query("UNLOCK TABLES")->execute();
+
+		return Model_Prize::query()
+			->where('participant_id', $participant->id)
+			->get_one();
+	}
+
+	/**
+	 * Let MySQL select element, but lock table before.
+	 *
+	 * One big query.
+	 */
+	public static function draw_sql_sub_lock(Model_Participant $participant)
+	{
+		if ( ! $participant->id) {
+			throw new Exception('Participant not saved.');
+		}
+
+		// WRITE implies READ
+		\DB::query("LOCK TABLES `" . static::$_table_name . "` WRITE, " . static::$_table_name . " AS c_p READ")->execute();
+		\DB::query("UPDATE `" . static::$_table_name . "`"
+			. " SET participant_id = '{$participant->id}' "
+			. " WHERE id = (SELECT * FROM ("
+			. " SELECT id FROM " . static::$_table_name . " AS c_p WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1"
+			. " ) available)")
+			->execute();
 		\DB::query("UNLOCK TABLES")->execute();
 
 		return Model_Prize::query()
