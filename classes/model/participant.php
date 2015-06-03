@@ -9,10 +9,21 @@ class Model_Participant extends \Orm\Model
 
 	protected static $_properties = [
 		'id',
-		'name',
-		'prize_id',
-		'created_at',
-		'updated_at',
+		'name' => [
+			'form' => [
+				'label' => 'Your Name',
+			],
+			'validation' => ['trim', 'required'],
+		],
+		'campaign' => [
+			'skip' => true,
+		],
+		'created_at' => [
+			'skip' => true,
+		],
+		'updated_at' => [
+			'skip' => true,
+		],
 	];
 
 	protected static $_has_one = [
@@ -33,5 +44,14 @@ class Model_Participant extends \Orm\Model
 			'property' => 'updated_at',
 		),
 	);
+
+
+	public static function purge()
+	{
+		$query = \DB::query("UPDATE `competition__prizes` SET participant_id = NULL");
+		$query->execute();
+		$query = \DB::query("DELETE FROM `" . static::table() . "`");
+		$query->execute();
+	}
 
 }

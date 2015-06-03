@@ -17,13 +17,12 @@ class Participants
 				[
 					'id' => ['type' => 'int', 'auto_increment' => true, 'unsigned' => true],
 					'name' => ['type' => 'varchar', 'constraint' => 64],
-					'prize_id' => ['type' => 'int', 'unsigned' => true, 'null' => true],
+					'campaign' => ['type' => 'varchar', 'constraint' => 64],
 					'created_at' => ['type' => 'int', 'unsigned' => true],
 					'updated_at' => ['type' => 'int', 'unsigned' => true, 'null' => true],
 				],
 				['id']
 			);
-			\DBUtil::create_index('competition__prizes', 'participant_id');
 			\DBUtil::add_foreign_key('competition__prizes', array(
 				'constraint' => 'fk_participants',
 				'key' => 'participant_id',

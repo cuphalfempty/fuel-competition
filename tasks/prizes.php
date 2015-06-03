@@ -24,18 +24,6 @@ HELP;
 		}
 	}
 
-	/**
-	 * Remove all sing-ups
-	 */
-	public function purge()
-	{
-		$query = \DB::query("UPDATE `competition__prizes` SET participant_id = NULL");
-		$query->execute();
-
-		$query = \DB::query("DELETE FROM `competition__participants`");
-		$query->execute();
-	}
-
 }
 
 /* End of file tasks/competition.php */

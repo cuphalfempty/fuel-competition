@@ -24,6 +24,9 @@ class Prizes
 				],
 				['id']
 			);
+			\DBUtil::create_index($this->_table_name, 'participant_id');
+
+			\Competition\Model_Prize::generate_prizes();
 
 			\DB::commit_transaction();
 		}
@@ -50,4 +53,3 @@ class Prizes
 		}
 	}
 }
-
