@@ -46,4 +46,24 @@ class Model_Prize extends \Orm\Model
 		}
 	}
 
+
+	public static function draw_orm(Model_Participant $p)
+	{
+		$p->prize = Model_Prize::query()
+			->where('participant_id', 'IS', null)
+			->order_by('id', 'ASC')
+			->get_one();
+		$p->save();
+		return $p;
+	}
+
+
+	public static function draw_orm_transaction(Model_Participant $p)
+	{
+		\DB::start_transaction();
+		$result = static::draw_orm($p);
+		\DB::commit_transaction();
+		return $result;
+	}
+
 }

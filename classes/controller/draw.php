@@ -5,7 +5,7 @@ namespace Competition;
 class Controller_Draw extends \Controller_Template
 {
 
-	public function action_orm()
+	public function action_index($method)
 	{
 		$fs = \Fieldset::forge('competition');
 		$fs->add_model('Competition\Model_Participant');
@@ -16,16 +16,12 @@ class Controller_Draw extends \Controller_Template
 				try {
 					$p = Model_Participant::forge([
 						'name' => $fs->field('name')->validated(),
-							'campaign' => 'orm',
+							'campaign' => $method,
 						]);
-					$p->prize = Model_Prize::query()
-						->where('participant_id', 'IS', null)
-						->order_by('id', 'ASC')
-						->get_one();
-					$p->save();
+					Model_Prize::{'draw_' . $method}($p);
 
 					\Session::set_flash('success', 'Saved');
-					\Response::redirect('/competition/draw/orm');
+					\Response::redirect(\Uri::main());
 				}
 				catch (\Exception $e) {
 					\Session::set_flash('error', $e->getMessage());
@@ -34,12 +30,24 @@ class Controller_Draw extends \Controller_Template
 			$fs->repopulate();
 		}
 
-		$this->template->title = 'Competition | Draw ORM';
+		$this->template->title = "Competition | Draw $method";
 		$this->template->content = \View::forge(
 			'draw',
 			['fs' => $fs],
 			false
 		);
+	}
+
+
+	public function action_orm()
+	{
+		return $this->action_index('orm');
+	}
+
+
+	public function action_orm_transaction()
+	{
+		return $this->action_index('orm_transaction');
 	}
 
 
