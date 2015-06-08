@@ -1,2 +1,4 @@
 # fuel-competition
-Stress test exercise ORM vs MySQL
+Exercise exercise to prove that ORM can't replace SQL.
+
+This is a module for [FuelPHP](https://fuelphp.com).
