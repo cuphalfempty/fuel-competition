@@ -66,4 +66,68 @@ class Model_Prize extends \Orm\Model
 		return $result;
 	}
 
+
+	/**
+	 * This will not work because ORM inserts automatic table aliases into query
+	 *
+	 * @param Model_Participant $p
+	 * @return void
+	 */
+	public static function draw_orm_lock(Model_Participant $p)
+	{
+		\DB::query("LOCK TABLES `" . static::table() . "` WRITE")->execute();
+		$p->prize = Model_Prize::query()
+			->where('participant_id', 'IS', null)
+			->order_by('id', 'ASC')
+			->get_one();
+		$p->save();
+		\DB::query("UNLOCK TABLES")->execute();
+	}
+
+
+	/**
+	 * @param Model_Participant $p
+	 * @return void
+	 */
+	public static function draw_sql(Model_Participant $p)
+	{
+		$sub_query = "SELECT id FROM `" . static::table() . "` WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1";
+		$query = \DB::query("UPDATE `" . static::table() . "` SET participant_id = '{$p->id}' WHERE id = (SELECT * FROM ($sub_query) available)");
+		$result = $query->execute();
+	}
+
+
+	/**
+	 * @param Model_Participant $p
+	 * @return void
+	 */
+	public static function draw_sql_lock(Model_Participant $p)
+	{
+		// WRITE implies READ
+		\DB::query("LOCK TABLES `" . static::table() . "` WRITE")->execute();
+		$id = \DB::query("SELECT id FROM `" . static::table() . "` WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1")
+			->execute()
+			->get('id', null);
+		\DB::query("UPDATE `" . static::table() . "` SET participant_id = '{$p->id}' WHERE id = $id")->execute();
+		\DB::query("UNLOCK TABLES")->execute();
+	}
+
+
+	/**
+	 * @param Model_Participant $p
+	 * @return void
+	 */
+	public static function draw_sql_sub(Model_Participant $p)
+	{
+		// WRITE implies READ
+		\DB::query("LOCK TABLES `" . Model_Prize::table() . "` WRITE, " . Model_Prize::table() . " AS c_p READ")->execute();
+		\DB::query("UPDATE `" . Model_Prize::table() . "`"
+			. " SET participant_id = '{$p->id}' "
+			. " WHERE id = (SELECT * FROM ("
+			. " SELECT id FROM " . Model_Prize::table() . " AS c_p WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1"
+			. " ) available)")
+			->execute();
+		\DB::query("UNLOCK TABLES")->execute();
+	}
+
 }
