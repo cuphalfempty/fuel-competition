@@ -70,6 +70,12 @@ class Controller_Draw extends \Controller_Template
 	}
 
 
+	public function action_sql_lock_2()
+	{
+		return $this->action_index('sql_lock_2');
+	}
+
+
 	public function action_sql_sub()
 	{
 		return $this->action_index('sql_sub');

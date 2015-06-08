@@ -117,6 +117,22 @@ class Model_Prize extends \Orm\Model
 	 * @param Model_Participant $p
 	 * @return void
 	 */
+	public static function draw_sql_lock_2(Model_Participant $p)
+	{
+		// WRITE implies READ
+		\DB::query("LOCK TABLES `" . static::table() . "` WRITE, " . static::table() . " AS t1 READ")->execute();
+		$id = \DB::query("SELECT id FROM `" . static::table() . "` AS t1 WHERE participant_id IS NULL ORDER BY id ASC LIMIT 1")
+			->execute()
+			->get('id', null);
+		\DB::query("UPDATE `" . static::table() . "` SET participant_id = '{$p->id}' WHERE id = $id")->execute();
+		\DB::query("UNLOCK TABLES")->execute();
+	}
+
+
+	/**
+	 * @param Model_Participant $p
+	 * @return void
+	 */
 	public static function draw_sql_sub(Model_Participant $p)
 	{
 		// WRITE implies READ
