@@ -19,33 +19,40 @@ class Controller_Summary extends \Controller_Template
 			$fs->repopulate();
 		}
 
-		$methods = \DB::select('campaign')
-			->from(Model_Participant::table())
-			->group_by('campaign')
+		$methods = \DB::select(['pa.campaign', 'method'], [\DB::expr('COUNT(*)'), 'total'], [\DB::expr('COUNT(IF(pr.id IS NULL, 1, NULL))'), 'errors'])
+			->from([Model_Participant::table(), 'pa'])
+			->join([Model_Prize::table(), 'pr'], 'left')
+			->on('pr.participant_id', '=', 'pa.id')
+			->group_by('method')
+			->order_by('errors', 'desc')
 			->execute()
-			->as_array(null, 'campaign');
-
-		$results = [];
-		foreach ($methods as $method) {
-			$results[$method]['participants'] = Model_Participant::query()
-				->where('campaign', $method)
-				->get();
-			$results[$method]['winners'] = Model_Participant::query()
-				->related('prize')
-				->where('campaign', $method)
-				->where('prize.id', 'IS NOT', null)
-				->count();
-			$results[$method]['rate'] = $results[$method]['winners'] / count($results[$method]['participants']) * 100;
-		}
+			->as_array('method');
 
 		$content = \View::forge(
 			'index/index',
-			['results' => $results]
+			['methods' => $methods]
 		);
 		$content->set('fs', $fs, false);
 
 		$this->template->title = 'Competition | Summary';
 		$this->template->content = $content;
 	}
+
+
+	public function action_details()
+	{
+		$participants = Model_Participant::query()
+			->related('prize')
+			->order_by('created_at', 'asc')
+			->get();
+
+		$content = \View::forge(
+			'index/details',
+			['participants' => $participants]
+		);
+		$this->template->title = 'Competition | Details';
+		$this->template->content = $content;
+	}
+
 
 }

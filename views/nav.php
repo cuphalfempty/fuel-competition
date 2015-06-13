@@ -1,5 +1,6 @@
 <nav>
 	<a href="/competition/">Summary</a>
+	<a href="/competition/details">Details</a> |
 	<a href="/competition/draw/orm/">Draw ORM</a>
 	<a href="/competition/draw/orm_lock/">Draw ORM (lock table)</a>
 	<a href="/competition/draw/sql/">Draw SQL</a>
